@@ -2,7 +2,7 @@
 
 This project implements arithmetic on **very large integers** using a **doubly linked list** (DLL) where **each node stores one digit**. This avoids limitations of built-in numeric types for extremely long values.
 
-## Assignment requirements (from the PDF)
+## Assignment requirements 
 
 - Store the large integer as **individual digits in a doubly linked list**
 - Support:
@@ -78,35 +78,6 @@ Implemented in `src/BigNumber.java`.
 
 - `src/BigNumber.java`: big integer implementation (DLL digits)
 - `src/Main.java`: simple CLI that reads `m` and `n`, prints all 4 operations
-
-## Build & run (Windows / PowerShell)
-
-From the repository root:
-
-```bash
-javac -d out src/*.java
-java -cp out Main
-```
-
-### If `javac` is not found
-
-You currently have `java` (JRE), but you also need the **JDK** (which includes `javac`) to compile.
-
-- Install a JDK (Java 8+ is fine; Java 17 also works)
-- Reopen PowerShell and confirm:
-
-```bash
-javac -version
-```
-
-### If you have Java 8 installed (common) and JDK 17 installed
-
-If your `java -version` shows **1.8** but your `javac` is from **17**, compile targeting Java 8 so it runs:
-
-```bash
-javac --release 8 -d out src/*.java
-java -cp out Main
-```
 
 ## Input format
 
