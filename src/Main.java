@@ -3,67 +3,71 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * Main application class serving as the entry point for the BigNumber calculator.
- * It handles terminal I/O, parses user inputs, and executes basic arithmetic operations.
+ * Main application class for the BigNumber calculator.
+ * This program reads two large integers from the user and performs:
+ * - Addition
+ * - Subtraction
+ * - Multiplication
+ * - Division (with up to 20 decimal places)
  */
 public final class Main {
-    
     /**
-     * Reads one line and accepts either a plain number ("123")
-     * or a variable-style assignment ("m = 123").
-     * * @param br The BufferedReader tied to standard input.
-     * @return The cleaned right-hand side numeric string, or null if EOF is reached.
-     * @throws IOException If an I/O transport error occurs while reading.
+     * Reads a line from input and extracts the numeric value.
+     * Supports two input formats:
+     * - "m = 123" (extracts "123")
+     * - "123" (uses directly)
+     * Handles whitespace trimming.
+     * @param br BufferedReader connected to standard input
+     * @return The numeric string, or null if EOF is reached
+     * @throws IOException if an I/O error occurs
      */
     private static String readValueLine(BufferedReader br) throws IOException {
-        // Accept either "m = 123" or just "123"
         String line = br.readLine();
         if (line == null) return null;
         int eq = line.indexOf('=');
-        String rhs = (eq >= 0) ? line.substring(eq + 1) : line;
-        return rhs.trim();
+        return ((eq >= 0) ? line.substring(eq + 1) : line).trim();
     }
 
     /**
-     * Executes the application life cycle: gathering inputs, invoking the BigNumber 
-     * library API methods, and rendering calculated answers to the console.
-     * * @param args Command-line arguments (not utilized).
+     * Main entry point for the BigNumber calculator application.
+     * Workflow:
+     * 1. Prompts user to enter two numbers (m and n)
+     * 2. Parses input strings into BigNumber objects
+     * 3. Performs all four arithmetic operations
+     * 4. Displays results to console
+     * 5. Handles exceptions gracefully (invalid input, division by zero)
+     * @param args Command-line arguments (not used)
      */
     public static void main(String[] args) {
-        // Instantiate a BufferedReader inside a try-with-resources block to handle auto-closing.
         try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
-            // Read the two operands from stdin.
+            // Prompt user for first operand
             System.out.println("Enter m (e.g. m = 123):");
             String ms = readValueLine(br);
+            
+            // Prompt user for second operand
             System.out.println("Enter n (e.g. n = 456):");
             String ns = readValueLine(br);
 
-            // Basic validation before parsing into BigNumber.
+            // Validate input: neither operand should be null or empty
             if (ms == null || ns == null || ms.isEmpty() || ns.isEmpty()) {
                 System.err.println("Missing input.");
                 return;
             }
 
-            // Parse user input into big integers backed by linked lists.
+            // Parse string inputs into BigNumber objects
             BigNumber m = new BigNumber(ms);
             BigNumber n = new BigNumber(ns);
 
-            // Run all required arithmetic operations.
-            BigNumber add = BigNumber.add(m, n);
-            BigNumber sub = BigNumber.subtract(m, n);
-            BigNumber mul = BigNumber.multiply(m, n);
-            String div = BigNumber.divideToDecimalString(m, n, 20);
-
-            // Print final results.
-            System.out.println("addition = " + add.toString());
-            System.out.println("subtraction = " + sub.toString());
-            System.out.println("multiplication = " + mul.toString());
-            System.out.println("division = " + div);
+            // Perform all four arithmetic operations
+            System.out.println("addition = " + BigNumber.add(m, n));
+            System.out.println("subtraction = " + BigNumber.subtract(m, n));
+            System.out.println("multiplication = " + BigNumber.multiply(m, n));
+            System.out.println("division = " + BigNumber.divideToDecimalString(m, n, 20));
         } catch (IllegalArgumentException e) {
-            // Handles invalid numbers and division-by-zero from BigNumber.
+            // Handle invalid number format or division by zero
             System.err.println("Error: " + e.getMessage());
         } catch (IOException e) {
-            // Handles console input failures.
+            // Handle console input errors
             System.err.println("I/O Error: " + e.getMessage());
         }
     }

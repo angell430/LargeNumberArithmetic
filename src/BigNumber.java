@@ -1,48 +1,42 @@
-import java.util.Objects;
-
 /**
- * Big integer implemented as a doubly linked list of base-10 digits.
- * Each node stores exactly one digit [0..9].
+ * BigNumber represents arbitrary-precision integers using a doubly linked list.
+ * Each node in the list stores a single decimal digit (0-9).
+ * The list is ordered from most significant digit (head) to least significant digit (tail).
  */
 public final class BigNumber {
     /**
-     * Node in the doubly linked list; one decimal digit per node.
+     * Node represents a single digit in the linked list structure.
      */
     private static final class Node {
-        /** The single-digit integer value [0..9] stored in this node. */
-        int digit;
-        /** Pointer to the previous digit node (closer to the most significant digit). */
-        Node prev;
-        /** Pointer to the next digit node (closer to the least significant digit). */
-        Node next;
+        int digit;      // Stores a single decimal digit [0-9]
+        Node prev;      // Reference to previous node (more significant digit)
+        Node next;      // Reference to next node (less significant digit)
 
         /**
-         * Constructs a new Node containing a single decimal digit.
-         * * @param digit The numerical digit value [0..9].
+         * Constructs a node with the given digit value.
+         * @param digit A decimal digit value [0-9]
          */
         Node(int digit) {
             this.digit = digit;
         }
     }
 
-    /** Reference to the most significant digit (front of the doubly linked list). */
-    private Node head; 
-    /** Reference to the least significant digit (end of the doubly linked list). */
-    private Node tail; 
-    /** Flag indicating whether the number is negative. True for negative, false for non-negative. */
-    private boolean negative; 
+    private Node head;          // Points to the most significant digit
+    private Node tail;          // Points to the least significant digit
+    private boolean negative;   // Flag indicating if the number is negative
 
     /**
-     * Default constructor. Initializes the BigNumber value to zero.
+     * Default constructor: initializes BigNumber to 0.
      */
     public BigNumber() {
         pushBackDigit(0);
     }
 
     /**
-     * Parse signed integer text into digit nodes.
-     * * @param s The string expression of the integer to parse.
-     * @throws IllegalArgumentException if the string is null, empty, or contains invalid characters.
+     * String constructor: parses a string representation into a BigNumber.
+     * Supports optional '+' or '-' sign prefix and handles whitespace.
+     * @param s The string to parse (e.g., "123", "-456", "+789")
+     * @throws IllegalArgumentException if s is null, empty, or contains invalid characters
      */
     public BigNumber(String s) {
         if (s == null) throw new IllegalArgumentException("null number string");
@@ -50,9 +44,8 @@ public final class BigNumber {
         if (t.isEmpty()) throw new IllegalArgumentException("empty number string");
 
         int i = 0;
-        char first = t.charAt(0);
-        if (first == '+' || first == '-') {
-            negative = (first == '-');
+        if (t.charAt(0) == '+' || t.charAt(0) == '-') {
+            negative = (t.charAt(0) == '-');
             i = 1;
         }
         if (i >= t.length()) throw new IllegalArgumentException("invalid number string");
@@ -66,52 +59,55 @@ public final class BigNumber {
     }
 
     /**
-     * Deep-copy constructor. Creates an independent BigNumber instance with identical values.
-     * * @param other The BigNumber instance to replicate.
-     * @throws NullPointerException if the provided parameter is null.
+     * Copy constructor: creates a deep copy of another BigNumber.
+     * @param other The BigNumber to copy
+     * @throws NullPointerException if other is null
      */
     public BigNumber(BigNumber other) {
-        Objects.requireNonNull(other, "other");
+        if (other == null) throw new NullPointerException("other");
         this.negative = other.negative;
-        for (Node p = other.head; p != null; p = p.next) pushBackDigit(p.digit);
-        normalize();
+        for (Node p = other.head; p != null; p = p.next) {
+            pushBackDigit(p.digit);
+        }
     }
 
     /**
-     * Return |x| as a new BigNumber.
-     * * @param x The BigNumber target.
-     * @return A new BigNumber instance representing the absolute magnitude of x.
+     * Returns the absolute value (magnitude) of a BigNumber.
+     * @param x The BigNumber to take the absolute value of
+     * @return A new BigNumber with the same magnitude but positive sign
      */
     public static BigNumber abs(BigNumber x) {
-        BigNumber r = new BigNumber(x);
-        r.negative = false;
-        r.normalize();
-        return r;
+        BigNumber result = new BigNumber(x);
+        result.negative = false;
+        return result;
     }
 
     /**
-     * Read-only sign query.
-     * * @return True if the number is negative; false otherwise.
+     * Checks if this BigNumber is negative.
+     * @return true if negative, false otherwise
      */
     public boolean isNegative() {
         return negative;
     }
 
     /**
-     * Convert linked-list digits to canonical string form.
-     * * @return The canonical string representation of the signed BigNumber.
+     * Converts this BigNumber to its string representation.
+     * @return String representation (e.g., "-123", "456")
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (negative && !isZero()) sb.append('-');
-        for (Node p = head; p != null; p = p.next) sb.append((char) ('0' + p.digit));
+        for (Node p = head; p != null; p = p.next) {
+            sb.append((char) ('0' + p.digit));
+        }
         return sb.toString();
     }
 
-    // ---------------- DLL helpers ----------------
+    // ========== Linked List Helpers ==========
 
     /**
-     * Reset to an empty internal list by clearing all structure references.
+     * Clears the list and resets to empty state.
      */
     private void clear() {
         head = null;
@@ -120,68 +116,71 @@ public final class BigNumber {
     }
 
     /**
-     * Append one digit at the least-significant side.
-     * * @param digit The digit to append at the tail.
+     * Appends a digit to the end (least significant side) of the list.
+     * @param digit The digit to append [0-9]
      */
     private void pushBackDigit(int digit) {
-        Node n = new Node(digit);
-        n.prev = tail;
-        if (tail != null) tail.next = n;
-        tail = n;
-        if (head == null) head = n;
+        Node node = new Node(digit);
+        node.prev = tail;
+        if (tail != null) tail.next = node;
+        tail = node;
+        if (head == null) head = node;
     }
 
     /**
-     * Insert one digit at the most-significant side.
-     * * @param digit The digit to insert at the head.
+     * Inserts a digit at the beginning (most significant side) of the list.
+     * @param digit The digit to insert [0-9]
      */
     private void pushFrontDigit(int digit) {
-        Node n = new Node(digit);
-        n.next = head;
-        if (head != null) head.prev = n;
-        head = n;
-        if (tail == null) tail = n;
+        Node node = new Node(digit);
+        node.next = head;
+        if (head != null) head.prev = node;
+        head = node;
+        if (tail == null) tail = node;
     }
 
     /**
-     * Remove the current most-significant digit. Handles empty list and single item updates.
+     * Removes the most significant digit from the list.
      */
     private void popFrontDigit() {
         if (head == null) return;
-        Node old = head;
         head = head.next;
         if (head != null) head.prev = null;
         else tail = null;
-        // old will be GC'd
     }
 
     /**
-     * Fast check for zero in normalized representation.
-     * * @return True if the list contains exactly one single-digit node with the value 0.
+     * Checks if this BigNumber equals zero.
+     * @return true if the number is exactly 0
      */
     private boolean isZero() {
         return head != null && head == tail && head.digit == 0;
     }
 
     /**
-     * Enforce canonical representation:
-     * - no leading zeros (except single zero)
-     * - zero is always non-negative
+     * Normalizes the representation to canonical form:
+     * - Removes leading zeros (except for 0 itself)
+     * - Ensures zero is always non-negative
      */
     private void normalize() {
-        while (head != null && head.digit == 0 && head != tail) popFrontDigit();
+        while (head != null && head.digit == 0 && head != tail) {
+            popFrontDigit();
+        }
         if (head == null) pushBackDigit(0);
         if (isZero()) negative = false;
     }
 
+    // ========== Comparison and Conversion ==========
+
     /**
-     * Compare magnitudes only (ignore signs): returns -1, 0, 1.
-     * * @param a The first BigNumber operand.
-     * @param b The second BigNumber operand.
-     * @return -1 if |a| < |b|, 0 if |a| == |b|, and 1 if |a| > |b|.
+     * Compares the absolute values (magnitudes) of two BigNumbers.
+     * @param a First BigNumber
+     * @param b Second BigNumber
+     * @return -1 if |a| < |b|, 0 if |a| == |b|, 1 if |a| > |b|
      */
     private static int compareAbs(BigNumber a, BigNumber b) {
-        int lenA = 0, lenB = 0;
+        int lenA = 0;
+        int lenB = 0;
         for (Node p = a.head; p != null; p = p.next) lenA++;
         for (Node p = b.head; p != null; p = p.next) lenB++;
         if (lenA != lenB) return Integer.compare(lenA, lenB);
@@ -197,65 +196,52 @@ public final class BigNumber {
     }
 
     /**
-     * Build a BigNumber from a non-negative int helper value.
-     * * @param x The non-negative primitive int value to convert.
-     * @return A BigNumber instance holding the identical unsigned value.
-     * @throws IllegalArgumentException if x is less than 0.
+     * Converts an unsigned integer to a BigNumber.
+     * @param x Non-negative integer value
+     * @return BigNumber representation of x
+     * @throws IllegalArgumentException if x < 0
      */
     private static BigNumber fromUnsignedInt(int x) {
         if (x < 0) throw new IllegalArgumentException("x must be >= 0");
-        BigNumber r = new BigNumber();
-        r.clear();
-        if (x == 0) {
-            r.pushBackDigit(0);
-            return r;
-        }
-        int v = x;
-        while (v > 0) {
-            r.pushFrontDigit(v % 10);
-            v /= 10;
-        }
-        r.normalize();
-        return r;
+        return new BigNumber(Integer.toString(x));
     }
 
-    // ---------------- arithmetic on absolute values ----------------
+    // ========== Magnitude Arithmetic ==========
 
     /**
-     * Add magnitudes |a| + |b|.
-     * * @param a The first BigNumber magnitude operand.
-     * @param b The second BigNumber magnitude operand.
-     * @return A new BigNumber instance representing the absolute addition value.
+     * Adds the absolute values of two BigNumbers: |a| + |b|.
+     * @param a First BigNumber (magnitude)
+     * @param b Second BigNumber (magnitude)
+     * @return New BigNumber representing the sum of magnitudes
      */
     private static BigNumber addAbs(BigNumber a, BigNumber b) {
-        BigNumber r = new BigNumber();
-        r.clear();
+        BigNumber result = new BigNumber();
+        result.clear();
         int carry = 0;
         Node pa = a.tail;
         Node pb = b.tail;
         while (pa != null || pb != null || carry != 0) {
             int da = (pa != null) ? pa.digit : 0;
             int db = (pb != null) ? pb.digit : 0;
-            int s = da + db + carry;
-            r.pushFrontDigit(s % 10);
-            carry = s / 10;
+            int sum = da + db + carry;
+            result.pushFrontDigit(sum % 10);
+            carry = sum / 10;
             pa = (pa != null) ? pa.prev : null;
             pb = (pb != null) ? pb.prev : null;
         }
-        r.normalize();
-        return r;
+        result.normalize();
+        return result;
     }
 
     /**
-     * Subtract magnitudes |a| - |b|.
-     * Precondition: |a| >= |b|.
-     * * @param a The larger BigNumber magnitude operand.
-     * @param b The smaller BigNumber magnitude operand.
-     * @return A new BigNumber instance representing the absolute subtraction value.
+     * Subtracts the absolute values: |a| - |b| (assumes |a| >= |b|).
+     * @param a Larger BigNumber (magnitude)
+     * @param b Smaller BigNumber (magnitude)
+     * @return New BigNumber representing the difference of magnitudes
      */
     private static BigNumber subAbs(BigNumber a, BigNumber b) {
-        BigNumber r = new BigNumber();
-        r.clear();
+        BigNumber result = new BigNumber();
+        result.clear();
         int borrow = 0;
         Node pa = a.tail;
         Node pb = b.tail;
@@ -268,46 +254,46 @@ public final class BigNumber {
             } else {
                 borrow = 0;
             }
-            r.pushFrontDigit(da - db);
+            result.pushFrontDigit(da - db);
             pa = pa.prev;
             pb = (pb != null) ? pb.prev : null;
         }
-        r.normalize();
-        return r;
+        result.normalize();
+        return result;
     }
 
     /**
-     * Multiply magnitude |a| by a single decimal digit [0..9].
-     * * @param a The BigNumber magnitude multiplicand.
-     * @param digit The integer digit multiplier.
-     * @return A new BigNumber instance containing the scaled value.
+     * Multiplies a BigNumber by a single digit: |a| * digit.
+     * @param a BigNumber (magnitude)
+     * @param digit Single digit multiplier [0-9]
+     * @return New BigNumber representing the product
      */
     private static BigNumber mulAbsByDigit(BigNumber a, int digit) {
-        BigNumber r = new BigNumber();
-        r.clear();
+        BigNumber result = new BigNumber();
+        result.clear();
         if (digit == 0 || a.isZero()) {
-            r.pushBackDigit(0);
-            return r;
+            result.pushBackDigit(0);
+            return result;
         }
         int carry = 0;
-        for (Node pa = a.tail; pa != null; pa = pa.prev) {
-            int prod = pa.digit * digit + carry;
-            r.pushFrontDigit(prod % 10);
+        for (Node p = a.tail; p != null; p = p.prev) {
+            int prod = p.digit * digit + carry;
+            result.pushFrontDigit(prod % 10);
             carry = prod / 10;
         }
         while (carry != 0) {
-            r.pushFrontDigit(carry % 10);
+            result.pushFrontDigit(carry % 10);
             carry /= 10;
         }
-        r.normalize();
-        return r;
+        result.normalize();
+        return result;
     }
 
     /**
-     * Grade-school multiplication on magnitudes.
-     * * @param a The first BigNumber magnitude factor.
-     * @param b The second BigNumber magnitude factor.
-     * @return A new BigNumber representing the product of absolute values.
+     * Multiplies two BigNumbers using grade-school (long) multiplication: |a| * |b|.
+     * @param a First BigNumber (magnitude)
+     * @param b Second BigNumber (magnitude)
+     * @return New BigNumber representing the product
      */
     private static BigNumber mulAbs(BigNumber a, BigNumber b) {
         BigNumber result = fromUnsignedInt(0);
@@ -324,45 +310,35 @@ public final class BigNumber {
         return result;
     }
 
-    // ---------------- public operators ----------------
+    // ========== Public Arithmetic Operations ==========
 
     /**
-     * Signed addition using sign cases and magnitude arithmetic.
-     * * @param a The first addend BigNumber.
-     * @param b The second addend BigNumber.
-     * @return A new BigNumber corresponding to the final algebraic addition result.
+     * Adds two signed BigNumbers: a + b.
+     * Handles all sign combinations using magnitude arithmetic.
+     * @param a First addend
+     * @param b Second addend
+     * @return New BigNumber representing the sum
      */
     public static BigNumber add(BigNumber a, BigNumber b) {
-        BigNumber ra = new BigNumber(a);
-        BigNumber rb = new BigNumber(b);
-
-        if (ra.negative == rb.negative) {
-            BigNumber r = addAbs(ra, rb);
-            r.negative = ra.negative;
-            r.normalize();
-            return r;
+        if (a.negative == b.negative) {
+            BigNumber result = addAbs(a, b);
+            result.negative = a.negative;
+            result.normalize();
+            return result;
         }
-
-        int cmp = compareAbs(ra, rb);
+        int cmp = compareAbs(a, b);
         if (cmp == 0) return fromUnsignedInt(0);
-        if (cmp > 0) {
-            BigNumber r = subAbs(ra, rb);
-            r.negative = ra.negative;
-            r.normalize();
-            return r;
-        } else {
-            BigNumber r = subAbs(rb, ra);
-            r.negative = rb.negative;
-            r.normalize();
-            return r;
-        }
+        BigNumber result = (cmp > 0) ? subAbs(a, b) : subAbs(b, a);
+        result.negative = (cmp > 0) ? a.negative : b.negative;
+        result.normalize();
+        return result;
     }
 
     /**
-     * Signed subtraction as a + (-b).
-     * * @param a The minuend BigNumber.
-     * @param b The subtrahend BigNumber.
-     * @return A new BigNumber matching the mathematical algebraic formula value.
+     * Subtracts two signed BigNumbers: a - b (computed as a + (-b)).
+     * @param a The minuend
+     * @param b The subtrahend
+     * @return New BigNumber representing the difference
      */
     public static BigNumber subtract(BigNumber a, BigNumber b) {
         BigNumber nb = new BigNumber(b);
@@ -371,73 +347,67 @@ public final class BigNumber {
     }
 
     /**
-     * Signed multiplication: multiply magnitudes, then apply sign rule.
-     * * @param a The multiplier factor BigNumber.
-     * @param b The multiplicand factor BigNumber.
-     * @return A new BigNumber containing the accurate signed product.
+     * Multiplies two signed BigNumbers: a * b.
+     * Applies sign rule after multiplying magnitudes.
+     * @param a First factor
+     * @param b Second factor
+     * @return New BigNumber representing the product
      */
     public static BigNumber multiply(BigNumber a, BigNumber b) {
-        BigNumber aa = abs(a);
-        BigNumber bb = abs(b);
-        BigNumber r = mulAbs(aa, bb);
-        r.negative = (a.negative != b.negative) && !r.isZero();
-        r.normalize();
-        return r;
+        BigNumber result = mulAbs(abs(a), abs(b));
+        result.negative = (a.negative != b.negative) && !result.isZero();
+        return result;
     }
 
-    // ---------------- division (decimal string) ----------------
+    // ========== Division Helpers ==========
 
     /**
-     * Multiply current value by 10 by appending one zero digit.
+     * Multiplies this BigNumber by 10 (appends a 0 digit at the least significant end).
      */
     private void mulBy10() {
-        if (isZero()) return;
-        pushBackDigit(0);
+        if (!isZero()) pushBackDigit(0);
     }
 
     /**
-     * Add one small digit [0..9] to current non-negative value.
-     * * @param digit Single-digit int value [0..9] to accumulate into the current instance.
+     * Adds a single small digit to this BigNumber in-place.
+     * @param digit Single digit to add [0-9]
      */
     private void addSmallDigit(int digit) {
         BigNumber sum = addAbs(this, fromUnsignedInt(digit));
         this.head = sum.head;
         this.tail = sum.tail;
         this.negative = sum.negative;
-        normalize();
     }
 
     /**
-     * Integer division on magnitudes using long division.
-     * Precondition: divisor != 0 and both inputs are non-negative.
-     * * @param dividend The absolute dividend BigNumber.
-     * @param divisor The absolute divisor BigNumber.
-     * @param remainderOut An external container instance where the operation's remainder is assigned.
-     * @return A new BigNumber tracking the scalar non-negative integer quotient.
-     * @throws IllegalArgumentException if the divisor evaluated matches a mathematical zero.
+     * Performs integer division on absolute values using long division algorithm.
+     * Quotient is returned; remainder is stored in remainderOut parameter.
+     * @param dividend The dividend (magnitude)
+     * @param divisor The divisor (magnitude, must not be zero)
+     * @param remainderOut Container where the remainder will be stored
+     * @return New BigNumber representing the quotient
+     * @throws IllegalArgumentException if divisor is zero
      */
     private static BigNumber divAbsInteger(BigNumber dividend, BigNumber divisor, BigNumber remainderOut) {
         if (divisor.isZero()) throw new IllegalArgumentException("division by zero");
-
-        BigNumber q = new BigNumber();
-        q.clear();
+        BigNumber quotient = new BigNumber();
+        quotient.clear();
         remainderOut.clear();
         remainderOut.pushBackDigit(0);
 
-        // Build quotient one digit at a time from most significant side.
-        for (Node pd = dividend.head; pd != null; pd = pd.next) {
+        // Process each digit of the dividend from most to least significant
+        for (Node p = dividend.head; p != null; p = p.next) {
             remainderOut.mulBy10();
-            remainderOut.addSmallDigit(pd.digit);
-
+            remainderOut.addSmallDigit(p.digit);
             int digit = 0;
             if (compareAbs(remainderOut, divisor) >= 0) {
-                // Pick the largest digit d in [0..9] such that divisor*d <= remainder.
-                int lo = 0, hi = 9;
+                // Binary search to find the largest digit d where divisor*d <= remainder
+                int lo = 0;
+                int hi = 9;
                 while (lo <= hi) {
                     int mid = (lo + hi) / 2;
-                    BigNumber prod = mulAbsByDigit(divisor, mid);
-                    int c = compareAbs(prod, remainderOut);
-                    if (c <= 0) {
+                    int cmp = compareAbs(mulAbsByDigit(divisor, mid), remainderOut);
+                    if (cmp <= 0) {
                         digit = mid;
                         lo = mid + 1;
                     } else {
@@ -449,78 +419,74 @@ public final class BigNumber {
                 remainderOut.head = newRem.head;
                 remainderOut.tail = newRem.tail;
                 remainderOut.negative = false;
-                remainderOut.normalize();
             }
-            q.pushBackDigit(digit);
+            quotient.pushBackDigit(digit);
         }
-
-        q.normalize();
+        quotient.normalize();
         remainderOut.normalize();
-        return q;
+        return quotient;
     }
 
     /**
-     * Divide and return decimal string with up to {@code precision} fractional digits.
-     * Trailing zeros in the fractional part are trimmed.
-     * * @param dividend The input dividend scale value.
-     * @param divisor The input divisor scale value.
-     * @param precision Maximum allowable decimal fraction digits to evaluate.
-     * @return A fully formatted decimal evaluation String.
-     * @throws IllegalArgumentException if the divisor evaluated matches a zero.
+     * Divides two BigNumbers and returns the result as a decimal string.
+     * Performs both integer and fractional division.
+     * @param dividend The dividend
+     * @param divisor The divisor (must not be zero)
+     * @param precision Maximum number of decimal places to compute
+     * @return Decimal string representation of the quotient (e.g., "12.5", "-3.14159")
+     * @throws IllegalArgumentException if divisor is zero
      */
     public static String divideToDecimalString(BigNumber dividend, BigNumber divisor, int precision) {
-        // Clamp negative precision to zero instead of failing.
         if (precision < 0) precision = 0;
         if (abs(divisor).isZero()) throw new IllegalArgumentException("division by zero");
-
-        boolean neg = (dividend.negative != divisor.negative) && !abs(dividend).isZero();
-        BigNumber a = abs(dividend);
-        BigNumber b = abs(divisor);
-
-        // First compute integer quotient and remainder.
+        
+        // Determine if result should be negative
+        boolean negative = (dividend.negative != divisor.negative) && !abs(dividend).isZero();
+        
+        // Perform integer division on absolute values
         BigNumber rem = new BigNumber();
-        BigNumber q = divAbsInteger(a, b, rem);
-
-        String intPart = q.toString();
+        BigNumber quotient = divAbsInteger(abs(dividend), abs(divisor), rem);
+        
+        // Build result string with integer part
+        StringBuilder result = new StringBuilder();
+        if (negative && !quotient.isZero()) result.append('-');
+        result.append(quotient.toString());
+        
+        // Compute fractional digits using long division
         StringBuilder frac = new StringBuilder();
-        // Continue long division to generate fractional digits.
         for (int i = 0; i < precision && !rem.isZero(); i++) {
             rem.mulBy10();
-
             int digit = 0;
-            if (compareAbs(rem, b) >= 0) {
-                int lo = 0, hi = 9;
+            if (compareAbs(rem, abs(divisor)) >= 0) {
+                // Binary search for the quotient digit
+                int lo = 0;
+                int hi = 9;
                 while (lo <= hi) {
                     int mid = (lo + hi) / 2;
-                    BigNumber prod = mulAbsByDigit(b, mid);
-                    int c = compareAbs(prod, rem);
-                    if (c <= 0) {
+                    if (compareAbs(mulAbsByDigit(abs(divisor), mid), rem) <= 0) {
                         digit = mid;
                         lo = mid + 1;
                     } else {
                         hi = mid - 1;
                     }
                 }
-                BigNumber sub = mulAbsByDigit(b, digit);
-                BigNumber newRem = subAbs(rem, sub);
+                BigNumber newRem = subAbs(rem, mulAbsByDigit(abs(divisor), digit));
                 rem.head = newRem.head;
                 rem.tail = newRem.tail;
                 rem.negative = false;
-                rem.normalize();
             }
             frac.append((char) ('0' + digit));
         }
-
-        // Trim redundant trailing zeros in the decimal fraction.
+        
+        // Trim trailing zeros from fractional part
         while (frac.length() > 0 && frac.charAt(frac.length() - 1) == '0') {
             frac.setLength(frac.length() - 1);
         }
-
-        // Assemble final signed output.
-        StringBuilder out = new StringBuilder();
-        if (neg) out.append('-');
-        out.append(intPart);
-        if (frac.length() > 0) out.append('.').append(frac);
-        return out.toString();
+        
+        // Append fractional part if non-empty
+        if (frac.length() > 0) {
+            result.append('.').append(frac);
+        }
+        return result.toString();
     }
 }
