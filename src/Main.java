@@ -40,12 +40,13 @@ public final class Main {
      */
     public static void main(String[] args) {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+            System.out.println("Input:");
             // Prompt user for first operand
-            System.out.println("Enter m (e.g. m = 123):");
+            System.out.print("Enter m:");
             String ms = readValueLine(br);
             
             // Prompt user for second operand
-            System.out.println("Enter n (e.g. n = 456):");
+            System.out.print("Enter n:");
             String ns = readValueLine(br);
 
             // Validate input: neither operand should be null or empty
@@ -59,6 +60,7 @@ public final class Main {
             BigNumber n = new BigNumber(ns);
 
             // Perform all four arithmetic operations
+            System.out.println("Output:");
             System.out.println("addition = " + BigNumber.add(m, n));
             System.out.println("subtraction = " + BigNumber.subtract(m, n));
             System.out.println("multiplication = " + BigNumber.multiply(m, n));
