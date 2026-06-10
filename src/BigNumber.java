@@ -195,17 +195,6 @@ public final class BigNumber {
         return 0;
     }
 
-    /**
-     * Converts an unsigned integer to a BigNumber.
-     * @param x Non-negative integer value
-     * @return BigNumber representation of x
-     * @throws IllegalArgumentException if x < 0
-     */
-    private static BigNumber fromUnsignedInt(int x) {
-        if (x < 0) throw new IllegalArgumentException("x must be >= 0");
-        return new BigNumber(Integer.toString(x));
-    }
-
     // ========== Magnitude Arithmetic ==========
 
     /**
