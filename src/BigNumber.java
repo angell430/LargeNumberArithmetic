@@ -83,14 +83,6 @@ public final class BigNumber {
     }
 
     /**
-     * Checks if this BigNumber is negative.
-     * @return true if negative, false otherwise
-     */
-    public boolean isNegative() {
-        return negative;
-    }
-
-    /**
      * Converts this BigNumber to its string representation.
      * @return String representation (e.g., "-123", "456")
      */
