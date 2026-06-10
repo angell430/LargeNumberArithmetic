@@ -296,7 +296,7 @@ public final class BigNumber {
      * @return New BigNumber representing the product
      */
     private static BigNumber mulAbs(BigNumber a, BigNumber b) {
-        BigNumber result = fromUnsignedInt(0);
+        BigNumber result = new BigNumber();
         int shift = 0;
         for (Node pb = b.tail; pb != null; pb = pb.prev) {
             BigNumber part = mulAbsByDigit(a, pb.digit);
@@ -327,7 +327,7 @@ public final class BigNumber {
             return result;
         }
         int cmp = compareAbs(a, b);
-        if (cmp == 0) return fromUnsignedInt(0);
+        if (cmp == 0) return new BigNumber();
         BigNumber result = (cmp > 0) ? subAbs(a, b) : subAbs(b, a);
         result.negative = (cmp > 0) ? a.negative : b.negative;
         result.normalize();
@@ -373,7 +373,7 @@ public final class BigNumber {
      * @param digit Single digit to add [0-9]
      */
     private void addSmallDigit(int digit) {
-        BigNumber sum = addAbs(this, fromUnsignedInt(digit));
+        BigNumber sum = addAbs(this, new BigNumber(Integer.toString(digit)));
         this.head = sum.head;
         this.tail = sum.tail;
         this.negative = sum.negative;
