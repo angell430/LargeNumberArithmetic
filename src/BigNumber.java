@@ -176,7 +176,6 @@ public final class BigNumber {
         for (Node p = a.head; p != null; p = p.next) lenA++;
         for (Node p = b.head; p != null; p = p.next) lenB++;
         if (lenA != lenB) return Integer.compare(lenA, lenB);
-
         Node pa = a.head;
         Node pb = b.head;
         while (pa != null && pb != null) {
