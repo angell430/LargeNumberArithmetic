@@ -377,9 +377,9 @@ public final class BigNumber {
         remainderOut.pushBackDigit(0);
 
         // Process each digit of the dividend from most to least significant
-        for (Node p = dividend.head; p != null; p = p.next) {
-            remainderOut.mulBy10();
-            remainderOut.addSmallDigit(p.digit);
+        for (Node p = dividend.head; p != null; p = p.next) { // Loop dividend digit by digit from left to right
+            remainderOut.mulBy10(); // Shift remainder left by one digit (multiply by 10)
+            remainderOut.addSmallDigit(p.digit); // Drop current digit into unit place
             int digit = 0;
             if (compareAbs(remainderOut, divisor) >= 0) {
                 // Binary search to find the largest digit d where divisor*d <= remainder
@@ -399,12 +399,12 @@ public final class BigNumber {
                 BigNumber newRem = subAbs(remainderOut, sub);
                 remainderOut.head = newRem.head;
                 remainderOut.tail = newRem.tail;
-                remainderOut.negative = false;
+                remainderOut.negative = false; // Force remainder to be non-negative
             }
             quotient.pushBackDigit(digit);
         }
         quotient.normalize();
-        remainderOut.normalize();
+        remainderOut.normalize(); // Clean up the leading zeros in the remainder
         return quotient;
     }
 
